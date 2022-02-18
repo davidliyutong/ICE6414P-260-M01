@@ -1,3 +1,6 @@
+#ifndef _PROCESSORINFO_HPP
+#define _PROCESSORINFO_HPP
+
 #include <mpi.h>
 #include <string>
 
@@ -34,3 +37,5 @@ protected:
     int _iWorldRank = 0;
     std::string _ProcessorName;
 };
+
+#endif

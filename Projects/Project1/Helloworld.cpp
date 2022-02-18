@@ -1,6 +1,6 @@
 #include <iostream>
 #include <mpi.h>
-#include "ProcessorInfo.hpp"
+#include "MPIProcessorInfo.hpp"
 
 
 int main(int argc, char ** argv) {

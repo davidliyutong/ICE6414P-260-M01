@@ -1,4 +1,4 @@
-#include "ProcessorInfo.hpp"
+#include "MPIProcessorInfo.hpp"
 #include "debug.h"
 
 #ifndef CONFIG_PRECISION
