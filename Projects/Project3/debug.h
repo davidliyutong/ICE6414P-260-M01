@@ -16,7 +16,11 @@
 #define LEVEL_DEBUG 4
 
 /** Set log level **/
+#ifndef CONFIG_LOG_LEVEL
 #define LOG_LEVEL LEVEL_DEBUG
+#else
+#define LOG_LEVEL CONFIG_LOG_LEVEL
+#endif
 
 #if LOG_LEVEL >= LEVEL_ERROR
 #define LOGE(M, ...) fprintf(stderr, "\033[31;1m[ERROR]\033[0m (%s:%d: errno: %d) " M "\n", __FILE__, __LINE__, errno, ##__VA_ARGS__)

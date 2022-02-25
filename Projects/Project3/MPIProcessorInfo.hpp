@@ -38,4 +38,14 @@ protected:
     std::string _ProcessorName;
 };
 
+#define ON_SUB_PROCS(Processor) \
+        if(Processor.iRank() !=0)
+
+#define ON_MAIN_PROC(Processor) \
+        if(Processor.iRank() ==0)
+            
+#define FOR_ALL_SUB_PROC(Processor) \
+        for (auto iProcID = 1; iProcID < Processor.iSize(); ++iProcID)
+
+
 #endif
