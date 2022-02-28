@@ -1,3 +1,14 @@
+/**
+ * @file MatMul.hpp
+ * @author davidliyutong (davidliyutong@sjtu.edu.cn)
+ * @brief
+ * @version 0.1
+ * @date 2022-02-28
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #ifndef MATMUL_HPP
 #define MATMUL_HPP
 
@@ -7,6 +18,10 @@
 #include "block.hpp"
 
 namespace mpimath {
+    /**
+     * @brief dtype of matrix
+     *
+     */
     enum class emMatrixType {
         INT32 = 0,
         INT64 = 1,
@@ -14,6 +29,15 @@ namespace mpimath {
         INVALID = -1,
     };
 
+    /**
+     * @brief Message tag used in MPI
+     *
+     * @enum MAT_N      The matrix N
+     * @enum MATMUL_CTX The MaMul context
+     * @enum BLOCK_SZ   The block size
+     * @enum BLOCK      The block content
+     * @enum RESULT     The result
+     */
     enum class emMsgType {
         MAT_N,
         MATMUL_CTX,
@@ -21,7 +45,15 @@ namespace mpimath {
         BLOCK,
         RESULT,
     };
-
+    /**
+     * @brief The MatMul context for M @ N
+     *
+     * @struct lNRow row of N
+     * @struct lNCol col of N
+     * @struct lMRow row of M
+     * @struct lMCol col of M
+     *
+     */
     typedef struct {
         long lNRow;
         long lNCol;
@@ -30,17 +62,25 @@ namespace mpimath {
         bool bValid;
     }tMatMulCtx;
 
+    /**
+     * @brief Calculate M @ N, the main process (process 0)
+     *
+     * @param MatM
+     * @param MatN
+     * @param Processor
+     * @return Matrix2D<double>
+     */
     Matrix2D<double> MPIMatMulMain(const Matrix2D<double>& MatM,
                                    const Matrix2D<double>& MatN,
                                    MPIProcessorInfo Processor) {
 
         /** Initiate MatMulCtx */
         tMatMulCtx Ctx = {
-            .lNRow = (long)(MatN.ulRow),
-            .lNCol = (long)(MatN.ulCol),
-            .lMRow = (long)(MatM.ulRow),
-            .lMCol = (long)(MatM.ulCol),
-            .bValid = (MatM.ulCol == MatN.ulRow) ? true : false
+            .lNRow = (long)(MatN.ulRow()),
+            .lNCol = (long)(MatN.ulCol()),
+            .lMRow = (long)(MatM.ulRow()),
+            .lMCol = (long)(MatM.ulCol()),
+            .bValid = (MatM.ulCol() == MatN.ulRow()) ? true : false
         };
         /** Broadcast process context*/
         MPI_Bcast(&Ctx, sizeof(Ctx), MPI_CHAR, 0, MPI_COMM_WORLD);
@@ -49,7 +89,7 @@ namespace mpimath {
         }
 
         /** Broadcast Matrix N */
-        MPI_Bcast(MatN.pData, (int)MatN.Size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(MatN.pData(), (int)MatN.Size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
         auto aRequests = new MPI_Request[Processor.iRank()];/** Store Requests */
         Matrix2D<double> MatRes(Ctx.lMRow, Ctx.lNCol);/** Store Result */
@@ -64,7 +104,7 @@ namespace mpimath {
                                        Ctx.lMRow);
 
             /** Send slice */
-            MPI_Send(&MatM.pData[lLineIndex * Ctx.lMCol],
+            MPI_Send(&MatM.pData()[lLineIndex * Ctx.lMCol],
                      lLineNum * Ctx.lMCol,
                      MPI_DOUBLE,
                      iProcID,
@@ -72,7 +112,7 @@ namespace mpimath {
                      MPI_COMM_WORLD);
 
             /** Receive from workers */
-            MPI_Irecv(&MatRes.pData[lLineIndex * Ctx.lNCol],
+            MPI_Irecv(&MatRes.pData()[lLineIndex * Ctx.lNCol],
                       lLineNum * Ctx.lNCol,
                       MPI_DOUBLE,
                       iProcID,
@@ -93,6 +133,12 @@ namespace mpimath {
         return MatRes;
     }
 
+    /**
+     * @brief Calculate M @ N, the worker processes (process != 0)
+     *
+     * @param Processor
+     * @return int
+     */
     int MPIMatMulSub(MPIProcessorInfo Processor) {
 
         tMatMulCtx Ctx = { 0 };
@@ -109,14 +155,14 @@ namespace mpimath {
         Matrix2D<double> MatN(Ctx.lNRow, Ctx.lNCol); /** MatN */
 
         /** Broadcast Matrix N */
-        MPI_Bcast(MatN.pData,
+        MPI_Bcast(MatN.pData(),
                   (int)MatN.Size(),
                   MPI_DOUBLE,
                   0,
                   MPI_COMM_WORLD);
 
         /** Receive slice */
-        MPI_Recv(MatMSlice.pData,
+        MPI_Recv(MatMSlice.pData(),
                  MatMSlice.Size(),
                  MPI_DOUBLE, 0,
                  (int)emMsgType::BLOCK,
@@ -127,7 +173,7 @@ namespace mpimath {
         auto MatRes = MatMSlice * MatN;
 
         /** Send result to proc 0 */
-        MPI_Send(MatRes.pData,
+        MPI_Send(MatRes.pData(),
                  MatRes.Size(),
                  MPI_DOUBLE,
                  0,

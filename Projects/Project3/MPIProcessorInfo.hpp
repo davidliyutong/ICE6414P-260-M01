@@ -21,7 +21,7 @@ public:
         return _ProcessorName;
     }
 
-    const char * acName() {
+    const char* acName() {
         return _ProcessorName.c_str();
     }
     int iSize() const {
@@ -31,7 +31,7 @@ public:
         return _iWorldRank;
     }
 
-    
+
 protected:
     int _iWorldSize = 0;
     int _iWorldRank = 0;
@@ -43,7 +43,7 @@ protected:
 
 #define ON_MAIN_PROC(Processor) \
         if(Processor.iRank() ==0)
-            
+
 #define FOR_ALL_SUB_PROC(Processor) \
         for (auto iProcID = 1; iProcID < Processor.iSize(); ++iProcID)
 

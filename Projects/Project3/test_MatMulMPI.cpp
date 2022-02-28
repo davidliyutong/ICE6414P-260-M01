@@ -4,28 +4,57 @@
 #include "debug.h"
 #include <iostream>
 
-int main() {
+/**
+ * @brief test_MatMulMPI
+ *
+ * @param argc expected to be 4
+ * @param argv MatM.csv MatN.csv Result.csv
+ * @return int
+ */
+int main(int argc, char** argv) {
     using mpimath::Matrix2D;
     MPI_Init(NULL, NULL);
     MPIProcessorInfo Processor;
-    Matrix2D<double> A(9, 9, true);
-    A[0][0] = 1;
-    A[0][1] = 2;
-    A[1] = { 1,2,3,4,5,6,7,8,9 };
-    if (Processor.iRank() == 0) {
-        std::cout << A;
+    if (argc < 4) {
+        LOGE_S("Insufficient number of argument, usage ./program MatM.csv MatN.csv Result.csv");
+        return -1;
     }
+
+    auto sMatMPath = std::string(argv[1]);
+    auto sMatNPath = std::string(argv[2]);
+    auto sResultPath = std::string(argv[3]);
+
+    Matrix2D<double> M{};
+    M.ReadCSV(sMatMPath);
+    Matrix2D<double> N{};
+    N.ReadCSV(sMatMPath);
+    Matrix2D<double> Res{};
+
+    // ON_MAIN_PROC(Processor) {
+    //     std::cout << M;
+    //     std::cout << N;
+    // }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     /** Invoke MPI functions */
-    if (Processor.iRank() == 0) {
-        auto Res = mpimath::MPIMatMulMain(A, A, Processor);
-        std::cout << Res;
+    auto Timer = MPITimer();
+    if (Processor.iSize() < 2) {
+        Res = M * N;
     } else {
-        mpimath::MPIMatMulSub(Processor);
+        if (Processor.iRank() == 0) {
+            Res = mpimath::MPIMatMulMain(M, N, Processor);
+        } else {
+            mpimath::MPIMatMulSub(Processor);
+        }
     }
 
+
+    ON_MAIN_PROC(Processor) {
+        LOGI("Time elapsed: %f", Timer.TimeDelta());
+        // std::cout << Res;
+        Res.DumpCSV(sResultPath);
+    }
 
     MPI_Finalize();
     return 0;

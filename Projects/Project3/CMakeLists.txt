@@ -5,6 +5,8 @@ include_directories("/usr/include/aarch64-linux-gnu/mpich")
 add_definitions(-DCONFIG_LOG_LEVEL=LEVEL_INFO)
 add_executable(test_MatMul test_MatMul.cpp)
 add_executable(test_MatMulMPI test_MatMulMPI.cpp)
+add_executable(test_MatMulCSV test_MatMulCSV.cpp)
+
 
 
 
