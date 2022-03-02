@@ -16,6 +16,7 @@
 #include "MPIProcessorInfo.hpp"
 #include <vector>
 #include "block.hpp"
+ // #include "debug.h"
 
 namespace mpimath {
     /**
@@ -91,7 +92,7 @@ namespace mpimath {
         /** Broadcast Matrix N */
         MPI_Bcast(MatN.pData(), (int)MatN.Size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        auto aRequests = new MPI_Request[Processor.iRank()];/** Store Requests */
+        auto aRequests = new MPI_Request[Processor.iSize()];/** Store Requests */
         Matrix2D<double> MatRes(Ctx.lMRow, Ctx.lNCol);/** Store Result */
 
         FOR_ALL_SUB_PROC(Processor) {
@@ -112,6 +113,7 @@ namespace mpimath {
                      MPI_COMM_WORLD);
 
             /** Receive from workers */
+            // LOGD("[%d] Receiving {RESULT} size=%ld", Processor.iRank(), lLineNum * Ctx.lNCol);
             MPI_Irecv(&MatRes.pData()[lLineIndex * Ctx.lNCol],
                       lLineNum * Ctx.lNCol,
                       MPI_DOUBLE,
@@ -128,7 +130,11 @@ namespace mpimath {
         }
 
         /** Free Requests **/
-        delete[] aRequests;
+        // LOGD("[%d] Freeing {aRequests} %p", Processor.iRank(), aRequests);
+        if (aRequests != nullptr) {
+            delete[] aRequests;
+            aRequests = nullptr;
+        }
 
         return MatRes;
     }
@@ -173,6 +179,7 @@ namespace mpimath {
         auto MatRes = MatMSlice * MatN;
 
         /** Send result to proc 0 */
+        // LOGD("[%d] Sending {RESULT} size=%ld", Processor.iRank(), MatRes.Size());
         MPI_Send(MatRes.pData(),
                  MatRes.Size(),
                  MPI_DOUBLE,
