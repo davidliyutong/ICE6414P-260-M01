@@ -1,4 +1,4 @@
-# Helloworld
+# Helloworld & GetPI
 
 ## Installing MPI
 
@@ -35,7 +35,7 @@ export MANPATH=$MPI_ROOT/man:$MANPATH
 ```cmake
 project(Hellowrold CXX)
 set(CMAKE_CXX_COMPILER "/usr/bin/mpicxx")
-include_directories("/usr/include/aarch64-linux-gnu/mpich")
+include_directories(...)
 add_executable(...)
 ```
 
@@ -55,7 +55,7 @@ mpicxx Helloworld.cpp -o Helloworld
 
 ## Helloworld
 
-为了完成Helloworld，我们设计了一个类
+为了完成Helloworld，我们设计了一个类来获取进程的Rank和Size。
 
 ```c++
 
@@ -132,4 +132,6 @@ $$ \pi =\int_0^1\frac{4}{(1+x^2)} $$
 
 ## 演示
 
-使用`./run.sh`来编译代码并运行
+使用`./run.sh`来编译代码并运行。
+
+> 如果手动运行，则首先用`cmake .`创建工程，然后用`make` 编译，最后用`mpirun -n <N>`执行
