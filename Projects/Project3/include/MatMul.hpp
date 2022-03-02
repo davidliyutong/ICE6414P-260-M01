@@ -139,7 +139,7 @@ namespace mpimath {
      * @param Processor
      * @return int
      */
-    int MPIMatMulSub(MPIProcessorInfo Processor) {
+    int MPIMatMulWorker(MPIProcessorInfo Processor) {
 
         tMatMulCtx Ctx = { 0 };
         /** Broadcast process context */

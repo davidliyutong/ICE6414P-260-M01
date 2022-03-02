@@ -3,4 +3,5 @@ mkdir build
 fi
 cd build && cmake .. && make && cd ..
 
-mpirun -n 4 ./build/test_MatMulMPI test.csv test.csv result.csv
+python3 ./tests/test_generate_data.py 1000
+mpirun -n 5 ./build/test_MatMulMPI M.csv N.csv result.csv

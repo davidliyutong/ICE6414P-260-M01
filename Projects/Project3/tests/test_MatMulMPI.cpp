@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         if (Processor.iRank() == 0) {
             Res = mpimath::MPIMatMulMain(M, N, Processor);
         } else {
-            mpimath::MPIMatMulSub(Processor);
+            mpimath::MPIMatMulWorker(Processor);
         }
     }
 
