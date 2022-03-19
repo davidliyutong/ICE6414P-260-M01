@@ -477,3 +477,81 @@ Found 2 items
 修改Hadoop配置文件后后最好删除hadoop-data目录，重新格式化HDFS文件系统
 
 用于参考的配置文件在`/etc/haddop`目录下
+
+## Spark 安装
+
+### 下载Spark
+
+从[Spark 下载](https://spark.apache.org/downloads.html)
+
+> 下载预编译的Spark前需要确认版本匹配。Hadoop2.10可视为Hadoop2.7
+
+```bash
+[speit@hadoop-nn] wget https://dlcdn.apache.org/spark/spark-3.2.1/spark-3.2.1-bin-hadoop2.7.tgz
+[speit@hadoop-nn] tar -xf spark-3.2.1-bin-hadoop2.7.tgz
+```
+
+### 安装Spark
+
+有关目录的一览表:
+
+| 项目           | 目录           | 变量          |
+| -------------- | -------------- | ------------- |
+| 家目录         | `/home/speit/` | `$HOME`       |
+| Spark 安装目录 | `$HOME/spark`  | `$SPARK_HOME` |
+
+我们意图将Spark安装到`/home/speit/spark`下，因此
+
+```bash
+[speit@hadoop-nn] mv spark-3.2.1-bin-hadoop2.7 ~/spark
+```
+
+将以下内容添加到终端配置文件`~/.bashrc`或者`~/.zshrc`中
+
+```bash
+# >>> spark >>>
+export SPARK_HOME=$HOME/spark/
+export PATH=$SPARK_HOME/bin:$PATH
+# <<< spark <<<
+```
+
+重新载入终端配置文件（以`zsh`为例）
+
+```bash
+[speit@hadoop-nn] source ~/.zshrc
+```
+
+### 测试Spark
+
+安装python
+
+```bash
+[speit@hadoop-nn] sudo apt-get install python3 python3-pip
+```
+
+测试`pyspark`命令
+
+```text
+[speit@hadoop-nn] pyspark
+Python 3.9.7 (default, Sep 16 2021, 13:09:58)
+[GCC 7.5.0] :: Anaconda, Inc. on linux
+Type "help", "copyright", "credits" or "license" for more information.
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+22/03/18 14:46:16 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 3.2.1
+      /_/
+
+Using Python version 3.9.7 (default, Sep 16 2021 13:09:58)
+Spark context Web UI available at http://hadoop-nn:4040
+Spark context available as 'sc' (master = local[*], app id = local-1647585977373).
+SparkSession available as 'spark'.
+>>>
+```
+
+Spark可以运行
