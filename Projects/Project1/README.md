@@ -130,8 +130,22 @@ $$ \pi =\int_0^1\frac{4}{(1+x^2)} $$
 
 两个思路分别体现在了`GetPIMapReduce()`和`GetPISendRecv()`函数中
 
-## 演示
+## Demo
 
 使用`./run.sh`来编译代码并运行。
 
 > 如果手动运行，则首先用`cmake .`创建工程，然后用`make` 编译，最后用`mpirun -n <N>`执行
+
+![Manually run the GetPI](img/20220417170606.png)
+
+## On Clusters
+
+首先，确保当前目录已经通过NFS共享挂载到了集群的各节点上，并且各节点都已经配置了免密钥登录和MPI，然后执行下面的命令
+
+```shell
+mpirun -H hadoop-nn,hadoop-data-1,hadoop-data-2 --oversubscribe -np 6 $(pwd)/build/Helloworld
+```
+
+- hadoop-nn,hadoop-data-1,hadoop-data-2是集群节点的主机名
+
+![How to run in clusters](img/20220417170335.png)
