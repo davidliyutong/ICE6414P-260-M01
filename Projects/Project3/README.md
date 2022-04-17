@@ -61,6 +61,7 @@ mpirun -n $N_PROCS ./build/test_MatMulMPI $MAT1 $MAT2 $RESULT
 ## Experiment
 
 测试1k * 1k 矩阵相乘
+
 ![MatMul 1k x 1k with MPI](img/20220417214719.png)
 
 然而，这个速度远远不及NumPy. NumPy实现了访存优化，比我们的MPI实现要优秀的多。（可以用`python ./test_numpy_matmul.py`替换命令对矩阵文件执行乘法）
