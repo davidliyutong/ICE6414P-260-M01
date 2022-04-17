@@ -1,9 +1,11 @@
 #include "MatMul.hpp"
 #include "MPIProcessorInfo.hpp"
 #include "MPITimer.hpp"
+#include "Matrix.hpp"
 #include "debug.h"
 #include <iostream>
 
+using namespace mpimath;
 /**
  * @brief test_MatMulMPI
  *
@@ -23,11 +25,19 @@ int main(int argc, char** argv) {
     auto sMatMPath = std::string(argv[1]);
     auto sMatNPath = std::string(argv[2]);
     auto sResultPath = std::string(argv[3]);
+    int iRet = 0;
 
     Matrix2D<double> M{};
-    M.ReadCSV(sMatMPath);
+    iRet = M.ReadCSV(sMatMPath);
+    if (iRet != emMatrixError::MATRIX_OK) {
+        LOGE_S("Read Error: %d", iRet);
+    }
     Matrix2D<double> N{};
-    N.ReadCSV(sMatMPath);
+    iRet = N.ReadCSV(sMatNPath);
+    if (iRet != emMatrixError::MATRIX_OK) {
+        LOGE_S("Read Error: %d", iRet);
+    }
+
     Matrix2D<double> Res{};
 
     // ON_MAIN_PROC(Processor) {

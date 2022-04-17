@@ -88,6 +88,9 @@ namespace mpimath {
          * @param bFillZero
          */
         void Init(size_t ulRow, size_t ulCol, bool bFillZero = false) {
+            if (_pData) {
+                delete [] _pData;
+            }
             this->_ulRow = ulRow;
             this->_ulCol = ulCol;
             this->_ulDataSize = sizeof(T) * ulRow * ulCol;
@@ -368,8 +371,9 @@ namespace mpimath {
                 }
                 /** Dump matrix content to file */
                 for (auto row = 0; row < _ulRow; ++row) {
-                    for (auto col = 0; col < _ulCol; ++col) {
-                        OutFile << _pData[row * _ulCol + col] << ", ";
+                    OutFile << _pData[row * _ulCol + 0];
+                    for (auto col = 1; col < _ulCol; ++col) {
+                        OutFile << "," << _pData[row * _ulCol + col];
                     }
                     OutFile << "\n";
                 }
