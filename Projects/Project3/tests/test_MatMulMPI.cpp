@@ -28,22 +28,19 @@ int main(int argc, char** argv) {
     int iRet = 0;
 
     Matrix2D<double> M{};
-    iRet = M.ReadCSV(sMatMPath);
-    if (iRet != emMatrixError::MATRIX_OK) {
-        LOGE_S("Read Error: %d", iRet);
-    }
     Matrix2D<double> N{};
-    iRet = N.ReadCSV(sMatNPath);
-    if (iRet != emMatrixError::MATRIX_OK) {
-        LOGE_S("Read Error: %d", iRet);
-    }
-
     Matrix2D<double> Res{};
 
-    // ON_MAIN_PROC(Processor) {
-    //     std::cout << M;
-    //     std::cout << N;
-    // }
+    ON_MAIN_PROC(Processor) {
+        iRet = M.ReadCSV(sMatMPath);
+        if (iRet != emMatrixError::MATRIX_OK) {
+            LOGE_S("Read Error: %d", iRet);
+        }
+        iRet = N.ReadCSV(sMatNPath);
+        if (iRet != emMatrixError::MATRIX_OK) {
+            LOGE_S("Read Error: %d", iRet);
+        }
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -58,7 +55,6 @@ int main(int argc, char** argv) {
             mpimath::MPIMatMulWorker(Processor);
         }
     }
-
 
     ON_MAIN_PROC(Processor) {
         LOGI("Time elapsed: %f", Timer.TimeDelta());
