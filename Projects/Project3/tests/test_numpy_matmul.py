@@ -7,4 +7,4 @@ M, N = np.loadtxt('M.csv',delimiter=','), np.loadtxt('N.csv',delimiter=',')
 start_t = time.time()
 result = np.matmul(M, N)
 end_t = time.time() - start_t
-print(f"Time elapsed: {end_t}")
+print(f"Python Time elapsed: {end_t}")

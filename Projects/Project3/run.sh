@@ -1,7 +1,13 @@
+USE_AVX=1
+
 if [ ! -d "./build" ]; then
     mkdir build
 fi
-cd build && cmake .. && make && cd ..
+
+cd build
+cmake .. -DUSE_AVX=$USE_AVX
+make
+cd ..
 
 if [ $# -ge 2 ]; then
     MAT_SIZE=$1
@@ -14,4 +20,8 @@ echo "Matrix size = $MAT_SIZE x $MAT_SIZE "
 echo "N_PROCS = $N_PROCS"
 
 python3 ./tests/test_generate_data.py $MAT_SIZE
-mpirun -n $N_PROCS ./build/test_MatMulMPI M.csv N.csv result.csv
+mpirun -n $N_PROCS ./build/test_MatMulMPI M.csv N.csv M@N_MPI.csv
+
+python ./tests/test_numpy_matmul.py M.csv N.csv M@N_Python.csv
+
+./build/test_MatMulCMD M.csv N.csv M@N_SIMD.csv

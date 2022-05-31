@@ -8,12 +8,12 @@ int main() {
     using mpimath::Matrix2D;
     MPI_Init(NULL, NULL);
     MPIProcessorInfo Processor;
-    Matrix2D<int> A(9, 9, true);
+    Matrix2D<double> A(9, 9, true);
 
     LOGD("%p, A[0][0] = %d", A.pData, A[0][0]);
     A[0][0] = 1;
     A[0][1] = 2;
-    Matrix2D<int> B;
+    Matrix2D<double> B;
     B = A;
     LOGD("%p, %p", A.pData, B.pData);
 

@@ -60,14 +60,32 @@ mpirun -n $N_PROCS ./build/test_MatMulMPI $MAT1 $MAT2 $RESULT
 
 ## Experiment
 
-测试1k * 1k 矩阵相乘
+通过执行`run.sh`，我们可以一次执行三个实验
+
+- MPI并行
+- Python Numpy
+- C++单线程
+
+所有实验都是对测试1k * 1k 矩阵相乘。N_PROC默认值为5，即4个工作进程，一个分发进程。
 
 ![MatMul 1k x 1k with MPI](img/20220417214719.png)
 
-然而，这个速度远远不及NumPy. NumPy实现了访存优化，比我们的MPI实现要优秀的多。（可以用`python ./test_numpy_matmul.py`替换命令对矩阵文件执行乘法）
+可以看到，MPI程序相对有一定的加速比。然而，这个速度远远不及NumPy. NumPy实现了访存优化，比我们的MPI实现要优秀的多。（可以用`python ./test_numpy_matmul.py`替换命令对矩阵文件执行乘法）
 
 ```shell
 python ./test_numpy_matmul.py M.csv N.csv result.csv
 ```
 
-![Numpy Experiment](img/20220417215425.png)
+## SIMD 优化
+
+`src/gemm.cpp`实现了float/double类型的通用矩阵乘法。该乘法使用了AVX指令集加速。
+
+通过修改run.sh中的USE_AVX变量，我们可以为整个实验开启AVX支持。
+
+```bash
+USE_AVX=1
+```
+
+加入AVX后，程序的速度提升了4倍。但是我们发现MPI的加速比为负数。这可能是因为我们在一台主机上开多进程，导致多个进程同时访问处理器AVX寄存器，反而降低了效率。
+
+![With AVX](img/20220417214720.png)

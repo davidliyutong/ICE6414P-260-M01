@@ -21,6 +21,14 @@
 #include <sstream>
 #include <vector>
 
+
+#ifdef __AVX__
+#include <immintrin.h>
+#include <emmintrin.h>
+#endif
+
+#include "gemm.hpp"
+
 namespace mpimath {
     /**
      * @brief Matrix return codes
@@ -89,13 +97,17 @@ namespace mpimath {
          */
         void Init(size_t ulRow, size_t ulCol, bool bFillZero = false) {
             if (_pData) {
-                delete [] _pData;
+                delete[] _pData;
             }
             this->_ulRow = ulRow;
             this->_ulCol = ulCol;
             this->_ulDataSize = sizeof(T) * ulRow * ulCol;
             if (this->_ulDataSize > 0) {
-                _pData = new T[_ulDataSize];
+#ifdef __AVX__
+                _pData = (T*)_mm_malloc(sizeof(T) * _ulDataSize, 32);
+#else
+                _pData = (T*)malloc(sizeof(T) * _ulDataSize);
+#endif
                 if (_pData != nullptr and bFillZero) {
                     bzero(_pData, _ulDataSize);
                 }
@@ -110,7 +122,7 @@ namespace mpimath {
          */
         ~Matrix2D() {
             if (_pData != nullptr) {
-                delete[] _pData;
+                free(_pData);
                 _pData = nullptr;
             }
         }
@@ -149,14 +161,18 @@ namespace mpimath {
         Matrix2D<T>& operator=(const Matrix2D<T>& Src) {
             if (this != &Src) {
                 if (_pData != nullptr) {
-                    delete[] _pData;
+                    free(_pData);
                     _pData = nullptr;
                 }
                 _ulCol = Src._ulCol;
                 _ulRow = Src._ulRow;
                 _ulDataSize = Src._ulDataSize;
 
-                _pData = new T[Src._ulDataSize];
+#ifdef __AVX__
+                _pData = (T*)_mm_malloc(sizeof(T) * Src._ulDataSize, 32);
+#else
+                _pData = (T*)malloc(sizeof(T) * Src._ulDataSize);
+#endif
                 memcpy(_pData, Src._pData, Src._ulDataSize);
             }
 
@@ -217,7 +233,11 @@ namespace mpimath {
             /** If the matrix is valid */
             if (IsValid()) {
                 /** Make new place for data */
-                auto pNewData = new T[this->_ulDataSize];
+#ifdef __AVX__
+                auto pNewData = (T*)_mm_malloc(sizeof(T) * this->_ulDataSize, 32);
+#else
+                auto pNewData = (T*)malloc(sizeof(T) * this->_ulDataSize);
+#endif
                 /** Copy the matrix */
                 for (auto i = 0; i < _ulRow; ++i) {
                     for (auto j = 0; j < _ulCol; ++j) {
@@ -225,7 +245,7 @@ namespace mpimath {
                     }
                 }
                 std::swap(_ulCol, _ulRow);
-                delete[] _pData;
+                free_(pData);
                 _pData = nullptr;
                 _pData = pNewData;
             } else {
@@ -244,32 +264,35 @@ namespace mpimath {
             if (this->_ulCol != N._ulRow) {
                 throw MATRIX_ERR_SHAPE;
             }
-            /**
-             * @brief Transpose and multiply to optimize cache access
-             *
-             */
-
-#if CONFIG_EN_CACHE_OPTIM
-            auto N_T = N;
-            N_T.Transpose();
-#endif
 
             Matrix2D<T> Res(this->_ulRow, N._ulCol);
-            /** Normal matmul operation */
-            for (auto i = 0; i < Res._ulRow; ++i) {
-                for (auto j = 0; j < Res._ulCol; ++j) {
-                    T Sum = 0;
-                    for (auto k = 0; k < this->_ulCol; ++k) {
-#if CONFIG_EN_CACHE_OPTIM
-                        Sum += this->pData[i * this->ulCol + k] * N_T.pData[j * N_T.ulCol + k];
-#else
-                        Sum += this->_pData[i * this->_ulCol + k] * N._pData[k * N._ulCol + j];
-#endif
+            // /** Normal matmul operation */
+            // for (auto i = 0; i < Res._ulRow; ++i) {
+            //     for (auto j = 0; j < Res._ulCol; ++j) {
+            //         T Sum = 0;
+            //         for (auto k = 0; k < this->_ulCol; ++k) {
 
+            //             Sum += this->_pData[i * this->_ulCol + k] * N._pData[k * N._ulCol + j];
+            //         }
+            //         Res._pData[i * Res._ulCol + j] = Sum;
+            //     }
+            // }
+            if (std::is_same<T, double>()) {
+                mpimath::gemm_f64((double*)Res._pData, (double*)this->_pData, (double*)N._pData, this->_ulRow, this->_ulCol, N._ulRow, N._ulCol);
+            } else if (std::is_same < T, float>()) {
+                mpimath::gemm_f32((float*)Res._pData, (float*)this->_pData, (float*)N._pData, this->_ulRow, this->_ulCol, N._ulRow, N._ulCol);
+            } else {
+                /** Normal matmul operation */
+                memset(Res._pData, 0, Res._ulDataSize);
+                for (auto i = 0; i < Res._ulRow; ++i) {
+                    for (auto k = 0; k < this->_ulCol; ++k) {
+                        for (auto j = 0; j < Res._ulCol; ++j) {
+                            Res._pData[i * Res._ulCol + j] += this->_pData[i * this->_ulCol + k] * N._pData[k * N._ulCol + j];
+                        }
                     }
-                    Res._pData[i * Res._ulCol + j] = Sum;
                 }
             }
+
             return Res;
         }
 
@@ -336,7 +359,7 @@ namespace mpimath {
 
             /** Free memory to avoid memory leak */
             if (_pData != nullptr) {
-                delete[] _pData;
+                free(_pData);
                 _pData = nullptr;
             }
 
