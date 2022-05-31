@@ -1,4 +1,4 @@
-USE_AVX=1
+USE_AVX=0
 
 if [ ! -d "./build" ]; then
     mkdir build

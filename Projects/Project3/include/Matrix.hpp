@@ -122,7 +122,11 @@ namespace mpimath {
          */
         ~Matrix2D() {
             if (_pData != nullptr) {
-                free(_pData);
+#ifdef __AVX__
+                _mm_free(_pData);
+#else
+                free(pData);
+#endif
                 _pData = nullptr;
             }
         }
@@ -161,7 +165,11 @@ namespace mpimath {
         Matrix2D<T>& operator=(const Matrix2D<T>& Src) {
             if (this != &Src) {
                 if (_pData != nullptr) {
-                    free(_pData);
+#ifdef __AVX__
+                _mm_free(_pData);
+#else
+                free(pData);
+#endif
                     _pData = nullptr;
                 }
                 _ulCol = Src._ulCol;
@@ -245,7 +253,11 @@ namespace mpimath {
                     }
                 }
                 std::swap(_ulCol, _ulRow);
-                free_(pData);
+#ifdef __AVX__
+                _mm_free(_pData);
+#else
+                free(pData);
+#endif
                 _pData = nullptr;
                 _pData = pNewData;
             } else {
@@ -359,7 +371,11 @@ namespace mpimath {
 
             /** Free memory to avoid memory leak */
             if (_pData != nullptr) {
-                free(_pData);
+#ifdef __AVX__
+                _mm_free(_pData);
+#else
+                free(pData);
+#endif
                 _pData = nullptr;
             }
 
