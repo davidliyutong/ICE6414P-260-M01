@@ -125,7 +125,7 @@ namespace mpimath {
 #ifdef __AVX__
                 _mm_free(_pData);
 #else
-                free(pData);
+                free(_pData);
 #endif
                 _pData = nullptr;
             }
@@ -168,7 +168,7 @@ namespace mpimath {
 #ifdef __AVX__
                 _mm_free(_pData);
 #else
-                free(pData);
+                free(_pData);
 #endif
                     _pData = nullptr;
                 }
@@ -256,7 +256,7 @@ namespace mpimath {
 #ifdef __AVX__
                 _mm_free(_pData);
 #else
-                free(pData);
+                free(_pData);
 #endif
                 _pData = nullptr;
                 _pData = pNewData;
@@ -374,7 +374,7 @@ namespace mpimath {
 #ifdef __AVX__
                 _mm_free(_pData);
 #else
-                free(pData);
+                free(_pData);
 #endif
                 _pData = nullptr;
             }
